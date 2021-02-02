@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "naive.h"
+#include "crypto.h"
 #include "linearalgebra.h"
 #include <math.h>
 
