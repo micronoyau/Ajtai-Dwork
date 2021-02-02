@@ -6,6 +6,7 @@ struct PubKey
     int n;
     struct Vector **v; // Array of vectors
     struct Vector **w; // Array of vectors
+    int i1;
 };
 
 void free_pubkey (struct PubKey *pubkey);

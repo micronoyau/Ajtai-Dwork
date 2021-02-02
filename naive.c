@@ -115,11 +115,31 @@ void gen_pubkey (struct PubKey **pubkey, struct Vector *privkey)
     }
 
     // V
-    (**pubkey).v = malloc(sizeof(struct Vector) * n*n*n);
-    for (int i=0; i<n*n*n; i++)
+    int valid = 0;
+    do
     {
-        init_vector (&(**pubkey).v[i], n);
-        random_Hu (privkey, (**pubkey).v[i]);
+        (**pubkey).v = malloc(sizeof(struct Vector) * n*n*n);
+        for (int i=0; i<n*n*n; i++)
+        {
+            init_vector (&(**pubkey).v[i], n);
+            random_Hu (privkey, (**pubkey).v[i]);
+            int test = (int) roundf( dot_product(privkey, (**pubkey).v[i]) );
+            if (test % 2 == 1)
+            {
+                valid = 1;
+            }
+        }
+    } while (valid == 0);
+
+    valid = 0;
+    while (valid == 0)
+    {
+        (**pubkey).i1 = random() % (n*n*n);
+        int test = (int) roundf( dot_product(privkey, (**pubkey).v[(**pubkey).i1]) );
+        if (test % 2 == 1)
+        {
+            valid = 1;
+        }
     }
 }
 
@@ -136,20 +156,23 @@ void gen_privkey (struct Vector **privkey, int n)
 
 void encrypt_bit (struct Vector *res, struct PubKey *pubkey, char bit)
 {
-    if (bit==0)
+    // Select b_i in {0,1}
+    for (int i=0; i<pow(pubkey->n, 3); i++)
     {
-        // Select b_i in {0,1}
-        for (int i=0; i<pow(pubkey->n, 3); i++)
+        int rand = (int) ((float)random() / ((float)RAND_MAX) + 0.5);
+        if (rand == 1)
         {
-            int rand = (int) ((float)random() / ((float)RAND_MAX) + 0.5);
-            if (rand == 1)
-            {
-                add_vector (res, pubkey->v[i], res);
-                mod_vector (res, pubkey->w, res);
-            }
+            add_vector (res, pubkey->v[i], res);
+            mod_vector (res, pubkey->w, res);
         }
-    } else {
-        random_Bn(res);
+    }
+    if (bit == 1)
+    {
+        struct Vector *tmp;
+        init_vector (&tmp, pubkey->n);
+        copy_vector (tmp, pubkey->v[pubkey->i1]);
+        mult_scalar_vector (tmp, 0.5, tmp);
+        add_vector (res, tmp, res);
     }
 }
 
