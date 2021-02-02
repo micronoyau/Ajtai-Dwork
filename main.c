@@ -6,7 +6,7 @@
 
 int main ()
 {
-    int n = 8;
+    int n = 4;
     init_random_seed();
 
     struct Vector *privkey;
